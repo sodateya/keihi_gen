@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>経費申請画像処理ツール</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>経費申請画像処理ツール</h1>
+        <p class="subtitle">画像をJPEG形式に変換し、指定形式のファイル名で保存します</p>
+        
+        <form id="receiptForm" class="form">
+            <div class="form-group">
+                <label for="amount">金額</label>
+                <input type="number" id="amount" name="amount" placeholder="例: 1500" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="name">氏名</label>
+                <input type="text" id="name" name="name" placeholder="例: 山田太郎" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="imageInput">画像を選択</label>
+                <input type="file" id="imageInput" name="image" accept="image/*" required>
+                <div class="file-info" id="fileInfo"></div>
+            </div>
+            
+            <div class="preview-container" id="previewContainer" style="display: none;">
+                <h3>プレビュー</h3>
+                <img id="previewImage" alt="プレビュー">
+            </div>
+            
+            <button type="submit" class="btn-primary" id="processBtn">
+                画像を処理してダウンロード
+            </button>
+        </form>
+        
+        <div class="info-box">
+            <h3>ファイル名形式</h3>
+            <p><code>yyyy_mm_dd_金額_氏名.jpg</code></p>
+            <p class="example">例: <code>2024_12_15_1500_山田太郎.jpg</code></p>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
