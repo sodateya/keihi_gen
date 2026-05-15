@@ -45,8 +45,7 @@
     "mac": {
       "icon": "assets/icon.icns",
       "category": "public.app-category.utilities",
-      "entitlements": "entitlements.plist",
-      "entitlementsInherit": "entitlements.plist",
+      "identity": null,
       "hardenedRuntime": false,
       "extendInfo": {
         "CFBundleDisplayName": "経費ぽん"
