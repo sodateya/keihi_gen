@@ -42,10 +42,10 @@
       "package.json",
       "lib/heic2any.min.js"
     ],
+    "afterPack": "scripts/afterPack.js",
     "mac": {
       "icon": "assets/icon.icns",
       "category": "public.app-category.utilities",
-      "identity": null,
       "hardenedRuntime": false,
       "extendInfo": {
         "CFBundleDisplayName": "経費ぽん"
