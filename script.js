@@ -6,12 +6,31 @@ const nameInput = document.getElementById("name");
 const saveNameToggle = document.getElementById("saveName");
 const fileLabel = document.getElementById("fileLabel");
 const resetBtn = document.getElementById("resetBtn");
+const dropZone = document.getElementById("dropZone");
+const fileNamePreview = document.getElementById("fileNamePreview");
+
+// ファイル名プレビューを更新する関数
+function updateFileNamePreview() {
+  if (!fileNamePreview) return;
+  const date = dateInput && dateInput.value ? dateInput.value : "yyyy_mm_dd";
+  const amount = amountInput && amountInput.value ? amountInput.value.trim() : "金額";
+  const name = nameInput && nameInput.value ? nameInput.value.trim() : "氏名";
+  const datePart = date.replace(/-/g, "_");
+  const sanitizedName = name.replace(/[\/\\?%*:|"<>]/g, "_");
+  fileNamePreview.textContent = `${datePart}_${amount}_${sanitizedName}.jpg`;
+}
 
 // 日付フィールドに今日の日付をセット
 if (dateInput) {
   const today = new Date();
   dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 }
+
+// 各フィールドの変更でファイル名プレビューを更新
+[dateInput, amountInput, nameInput].forEach(el => {
+  if (el) el.addEventListener("input", updateFileNamePreview);
+});
+updateFileNamePreview();
 
 // 名前保存の復元
 if (saveNameToggle && nameInput) {
@@ -50,7 +69,7 @@ if (resetBtn) {
     previewImage.src = "";
     previewContainer.style.display = "none";
     fileInfo.textContent = "";
-    if (fileLabel) fileLabel.textContent = "ファイルを選択してください";
+    if (fileLabel) fileLabel.textContent = "クリックまたはドラッグ＆ドロップ";
   });
 }
 
@@ -86,8 +105,12 @@ imageInput.addEventListener("change", function (e) {
       fileInfo.textContent += " (変換中...)";
       convertHEICToBlob(file)
         .then((jpegBlob) => {
-          previewImage.src = URL.createObjectURL(jpegBlob);
-          previewContainer.style.display = "block";
+          const r = new FileReader();
+          r.onload = function(ev) {
+            previewImage.src = ev.target.result;
+            previewContainer.style.display = "block";
+          };
+          r.readAsDataURL(jpegBlob);
         })
         .catch((error) => {
           console.error("HEICプレビュー変換エラー:", error);
@@ -96,7 +119,7 @@ imageInput.addEventListener("change", function (e) {
     } else {
       // 通常の画像ファイルのプレビュー
       const reader = new FileReader();
-      
+
       reader.onload = function (e) {
         console.log("ファイル読み込み成功");
         previewImage.src = e.target.result;
@@ -124,11 +147,52 @@ imageInput.addEventListener("change", function (e) {
       }
     }
   } else {
-    if (fileLabel) fileLabel.textContent = "ファイルを選択してください";
+    if (fileLabel) fileLabel.textContent = "クリックまたはドラッグ＆ドロップ";
     previewContainer.style.display = "none";
     fileInfo.textContent = "";
   }
 });
+}
+
+// ドラッグ＆ドロップでファイルをセットするヘルパー
+function handleDroppedFile(file) {
+  if (!file) return;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  imageInput.files = dt.files;
+  imageInput.dispatchEvent(new Event("change"));
+}
+
+// ドロップゾーン（ファイル選択ラベル）へのドラッグ＆ドロップ
+if (dropZone) {
+  dropZone.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+  });
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("dragover");
+  });
+  dropZone.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropZone.classList.remove("dragover");
+    handleDroppedFile(e.dataTransfer.files[0]);
+  });
+}
+
+// プレビュー表示中にドロップすると画像を置き換え
+if (previewContainer) {
+  previewContainer.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    previewContainer.classList.add("dragover");
+  });
+  previewContainer.addEventListener("dragleave", () => {
+    previewContainer.classList.remove("dragover");
+  });
+  previewContainer.addEventListener("drop", (e) => {
+    e.preventDefault();
+    previewContainer.classList.remove("dragover");
+    handleDroppedFile(e.dataTransfer.files[0]);
+  });
 }
 
 // ボタンクリックで処理（type="button"にしているのでフォーム送信・リセットされない）

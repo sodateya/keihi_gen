@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:;">
     <title>経費ぽん</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -42,9 +43,9 @@
 
             <div class="form-group">
                 <label for="imageInput">画像を選択</label>
-                <label class="file-label" for="imageInput">
+                <label class="file-label" id="dropZone" for="imageInput">
                     <span class="file-icon">📎</span>
-                    <span id="fileLabel">ファイルを選択してください</span>
+                    <span id="fileLabel">クリックまたはドラッグ＆ドロップ</span>
                 </label>
                 <input type="file" id="imageInput" name="image" required>
                 <p class="hint">JPEG・PNG・HEIC・WebP・BMP・TIFF など、あらゆる画像形式に対応しています。</p>
@@ -66,7 +67,7 @@
 
         <div class="info-box">
             <span class="info-icon">📁</span>
-            <code>yyyy_mm_dd_金額_氏名.jpg</code>
+            <code id="fileNamePreview">yyyy_mm_dd_金額_氏名.jpg</code>
         </div>
     </div>
 
