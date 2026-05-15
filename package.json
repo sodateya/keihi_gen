@@ -1,7 +1,7 @@
 {
   "name": "keihi-gen",
   "version": "1.0.0",
-  "description": "経費申請画像処理ツール",
+  "description": "経費ぽん",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -23,12 +23,13 @@
     "heic2any": "^0.0.4"
   },
   "devDependencies": {
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.1"
+    "@electron/fuses": "^2.1.1",
+    "electron": "~41.5.0",
+    "electron-builder": "^26.8.1"
   },
   "build": {
     "appId": "com.keihigen.app",
-    "productName": "経費申請画像処理ツール",
+    "productName": "KeiHiPon",
     "directories": {
       "output": "dist"
     },
@@ -38,18 +39,32 @@
       "script.js",
       "main.js",
       "preload.js",
-      "package.json"
+      "package.json",
+      "lib/heic2any.min.js"
     ],
     "mac": {
+      "icon": "assets/icon.icns",
       "category": "public.app-category.utilities",
+      "entitlements": "entitlements.plist",
+      "entitlementsInherit": "entitlements.plist",
+      "hardenedRuntime": false,
+      "extendInfo": {
+        "CFBundleDisplayName": "経費ぽん"
+      },
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ]
     },
@@ -57,18 +72,23 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "ia32"]
+          "arch": [
+            "x64",
+            "ia32"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
-    }
+    },
+    "publish": null
   }
 }
-

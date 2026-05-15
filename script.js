@@ -1,33 +1,81 @@
 // フォーム要素の取得
 const form = document.getElementById("receiptForm");
+const dateInput = document.getElementById("date");
 const amountInput = document.getElementById("amount");
 const nameInput = document.getElementById("name");
+const saveNameToggle = document.getElementById("saveName");
+const fileLabel = document.getElementById("fileLabel");
+const resetBtn = document.getElementById("resetBtn");
+
+// 日付フィールドに今日の日付をセット
+if (dateInput) {
+  const today = new Date();
+  dateInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+}
+
+// 名前保存の復元
+if (saveNameToggle && nameInput) {
+  const saved = localStorage.getItem("savedName");
+  if (saved !== null) {
+    saveNameToggle.checked = true;
+    nameInput.value = saved;
+  }
+
+  // トグル操作時
+  saveNameToggle.addEventListener("change", () => {
+    if (saveNameToggle.checked) {
+      localStorage.setItem("savedName", nameInput.value);
+    } else {
+      localStorage.removeItem("savedName");
+    }
+  });
+
+  // 名前入力時、保存がオンなら即時反映
+  nameInput.addEventListener("input", () => {
+    if (saveNameToggle.checked) {
+      localStorage.setItem("savedName", nameInput.value);
+    }
+  });
+}
 const imageInput = document.getElementById("imageInput");
 const previewContainer = document.getElementById("previewContainer");
 const previewImage = document.getElementById("previewImage");
 const fileInfo = document.getElementById("fileInfo");
 const processBtn = document.getElementById("processBtn");
 
+// リセットボタン
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    imageInput.value = "";
+    previewImage.src = "";
+    previewContainer.style.display = "none";
+    fileInfo.textContent = "";
+    if (fileLabel) fileLabel.textContent = "ファイルを選択してください";
+  });
+}
+
+// 必須要素の確認（スクリプトが正しく動くため）
+if (!processBtn || !imageInput || !amountInput || !nameInput) {
+  alert("画面の読み込みに失敗しました。ページを再読み込みしてください。");
+  console.error("不足している要素:", { processBtn: !!processBtn, imageInput: !!imageInput, amountInput: !!amountInput, nameInput: !!nameInput });
+}
+
 // 画像プレビューの表示
+if (imageInput) {
 imageInput.addEventListener("change", function (e) {
   const file = e.target.files[0];
   if (file) {
+    if (fileLabel) fileLabel.textContent = file.name;
+
     console.log("選択されたファイル:", {
       name: file.name,
       type: file.type,
       size: file.size,
     });
 
-    // ファイルタイプの確認（空の場合は画像として扱う）
-    if (file.type && !file.type.startsWith("image/")) {
-      alert("画像ファイルを選択してください");
-      imageInput.value = "";
-      return;
-    }
-
-    const fileTypeInfo = isHEICFile(file) 
-      ? "HEIC（JPEGに変換します）" 
-      : (file.type || "不明（画像として処理します）");
+    const fileTypeInfo = isHEICFile(file)
+      ? "HEIC（JPEGに変換します）"
+      : (file.type || file.name.split(".").pop().toUpperCase() + "（画像として処理します）");
     
     fileInfo.textContent = `選択されたファイル: ${file.name} (${(
       file.size / 1024
@@ -35,32 +83,16 @@ imageInput.addEventListener("change", function (e) {
 
     // HEICファイルの場合は変換してからプレビュー
     if (isHEICFile(file)) {
-      fileInfo.textContent += " (HEIC変換中...)";
-      
-      if (typeof heic2any !== "undefined") {
-        heic2any({
-          blob: file,
-          toType: "image/jpeg",
-          quality: 0.8,
+      fileInfo.textContent += " (変換中...)";
+      convertHEICToBlob(file)
+        .then((jpegBlob) => {
+          previewImage.src = URL.createObjectURL(jpegBlob);
+          previewContainer.style.display = "block";
         })
-          .then((convertedBlobs) => {
-            const jpegBlob = Array.isArray(convertedBlobs) ? convertedBlobs[0] : convertedBlobs;
-            const url = URL.createObjectURL(jpegBlob);
-            previewImage.src = url;
-            previewContainer.style.display = "block";
-            console.log("HEICプレビュー変換成功");
-          })
-          .catch((error) => {
-            console.error("HEICプレビュー変換エラー:", error);
-            fileInfo.textContent = `選択されたファイル: ${file.name} (${(
-              file.size / 1024
-            ).toFixed(2)} KB) - 形式: HEIC（プレビュー不可、変換は可能）`;
-          });
-      } else {
-        fileInfo.textContent = `選択されたファイル: ${file.name} (${(
-          file.size / 1024
-        ).toFixed(2)} KB) - 形式: HEIC（プレビュー不可、変換は可能）`;
-      }
+        .catch((error) => {
+          console.error("HEICプレビュー変換エラー:", error);
+          fileInfo.textContent = `選択されたファイル: ${file.name} (${(file.size / 1024).toFixed(2)} KB) - 形式: HEIC（プレビュー不可、変換は可能）`;
+        });
     } else {
       // 通常の画像ファイルのプレビュー
       const reader = new FileReader();
@@ -92,54 +124,66 @@ imageInput.addEventListener("change", function (e) {
       }
     }
   } else {
+    if (fileLabel) fileLabel.textContent = "ファイルを選択してください";
     previewContainer.style.display = "none";
     fileInfo.textContent = "";
   }
 });
+}
 
-// フォーム送信処理
-form.addEventListener("submit", async function (e) {
+// ボタンクリックで処理（type="button"にしているのでフォーム送信・リセットされない）
+if (processBtn) {
+processBtn.addEventListener("click", async function (e) {
   e.preventDefault();
+  e.stopPropagation();
 
-  const amount = amountInput.value.trim();
-  const name = nameInput.value.trim();
-  const file = imageInput.files[0];
+  // すぐにボタンを「処理中」にしてフィードバックを表示
+  processBtn.disabled = true;
+  processBtn.textContent = "処理中...";
+
+  const date = (dateInput && dateInput.value) ? dateInput.value : "";
+  const amount = (amountInput && amountInput.value) ? amountInput.value.trim() : "";
+  const name = (nameInput && nameInput.value) ? nameInput.value.trim() : "";
+  const file = imageInput && imageInput.files && imageInput.files[0];
 
   if (!file) {
     alert("画像を選択してください");
+    processBtn.disabled = false;
+    processBtn.textContent = "ぽんと保存する ✨";
     return;
   }
 
-  if (!amount || !name) {
-    alert("金額と氏名を入力してください");
+  if (!date || !amount || !name) {
+    alert("日付・金額・氏名を入力してください");
+    processBtn.disabled = false;
+    processBtn.textContent = "ぽんと保存する ✨";
     return;
   }
-
-  // ボタンを無効化
-  processBtn.disabled = true;
-  processBtn.textContent = "処理中...";
 
   try {
     // 画像をJPEG形式に変換
     const jpegBlob = await convertToJPEG(file);
 
     // ファイル名を生成
-    const fileName = generateFileName(amount, name);
+    const fileName = generateFileName(date, amount, name);
 
-    // ダウンロード
-    downloadFile(jpegBlob, fileName);
+    // ダウンロード（保存ダイアログは downloadFile 内で表示）
+    await downloadFile(jpegBlob, fileName);
 
-    // 成功メッセージ
-    alert("画像の処理が完了しました！ダウンロードを開始します。");
+    // 成功メッセージ（downloadFile内で既に表示する場合はスキップ）
+    if (!window.electronAPI) {
+      alert("画像の処理が完了しました！ダウンロードを開始します。");
+    }
   } catch (error) {
     console.error("エラー:", error);
     alert("エラーが発生しました: " + error.message);
   } finally {
     // ボタンを再有効化
     processBtn.disabled = false;
-    processBtn.textContent = "画像を処理してダウンロード";
+    processBtn.textContent = "ぽんと保存する ✨";
   }
 });
+}
 
 // HEICファイルかどうかを判定する関数
 function isHEICFile(file) {
@@ -155,6 +199,25 @@ function isHEICFile(file) {
   );
 }
 
+// HEICをJPEGのBlobに変換するヘルパー（sips優先、heic2anyフォールバック）
+async function convertHEICToBlob(file) {
+  // Electron環境ではmacOSネイティブのsipsを使用
+  if (window.electronAPI && window.electronAPI.convertHeic) {
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await window.electronAPI.convertHeic(Array.from(new Uint8Array(arrayBuffer)));
+    if (result.success) {
+      return new Blob([new Uint8Array(result.buffer)], { type: "image/jpeg" });
+    }
+    throw new Error(result.message);
+  }
+  // フォールバック: heic2any（ブラウザ環境）
+  if (typeof heic2any === "undefined") {
+    throw new Error("HEIC変換ライブラリが読み込まれていません。ページを再読み込みしてください。");
+  }
+  const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
+  return Array.isArray(converted) ? converted[0] : converted;
+}
+
 // 画像をJPEG形式に変換する関数
 async function convertToJPEG(file) {
   console.log("convertToJPEG開始:", {
@@ -163,31 +226,11 @@ async function convertToJPEG(file) {
     size: file.size,
   });
 
-  // ファイルタイプの確認（空の場合は画像として扱う）
-  if (file.type && !file.type.startsWith("image/") && !isHEICFile(file)) {
-    throw new Error("画像ファイルを選択してください");
-  }
-
-  // HEICファイルの場合はheic2anyを使用
+  // HEICファイルの場合
   if (isHEICFile(file)) {
-    console.log("HEICファイルを検出、heic2anyで変換します");
-    
+    console.log("HEICファイルを検出、変換します");
     try {
-      // heic2anyが利用可能か確認
-      if (typeof heic2any === "undefined") {
-        throw new Error("HEIC変換ライブラリが読み込まれていません。ページを再読み込みしてください。");
-      }
-
-      // HEICをJPEGに変換
-      const convertedBlobs = await heic2any({
-        blob: file,
-        toType: "image/jpeg",
-        quality: 0.9,
-      });
-
-      // heic2anyは配列を返す可能性があるので、最初の要素を取得
-      const jpegBlob = Array.isArray(convertedBlobs) ? convertedBlobs[0] : convertedBlobs;
-      
+      const jpegBlob = await convertHEICToBlob(file);
       console.log("HEIC変換成功, サイズ:", jpegBlob.size);
       return jpegBlob;
     } catch (error) {
@@ -296,16 +339,11 @@ async function convertToJPEG(file) {
 }
 
 // ファイル名を生成する関数
-function generateFileName(amount, name) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-
-  // ファイル名に使用できない文字を置換
+function generateFileName(date, amount, name) {
+  // "YYYY-MM-DD" → "YYYY_MM_DD"
+  const datePart = date.replace(/-/g, "_");
   const sanitizedName = name.replace(/[\/\\?%*:|"<>]/g, "_");
-
-  return `${year}_${month}_${day}_${amount}_${sanitizedName}.jpg`;
+  return `${datePart}_${amount}_${sanitizedName}.jpg`;
 }
 
 // ファイルをダウンロードする関数

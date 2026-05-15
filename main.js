@@ -1,6 +1,8 @@
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
+const { execFile } = require("child_process");
 
 let mainWindow;
 
@@ -18,8 +20,8 @@ function createWindow() {
       allowRunningInsecureContent: false,
       preload: path.join(__dirname, "preload.js"),
     },
-    title: "経費申請画像処理ツール",
-    backgroundColor: "#667eea",
+    title: "経費ぽん",
+    backgroundColor: "#F0FDFB",
   });
 
   // HTMLファイルを読み込む
@@ -35,6 +37,28 @@ function createWindow() {
     mainWindow = null;
   });
 }
+
+// HEICをmacOSネイティブのsipsで変換するIPCハンドラー
+ipcMain.handle("convert-heic", async (event, { buffer }) => {
+  const tmpInput = path.join(os.tmpdir(), `heic_${Date.now()}.heic`);
+  const tmpOutput = path.join(os.tmpdir(), `heic_${Date.now()}.jpg`);
+  try {
+    fs.writeFileSync(tmpInput, Buffer.from(buffer));
+    await new Promise((resolve, reject) => {
+      execFile("sips", ["-s", "format", "jpeg", "-s", "formatOptions", "90", tmpInput, "--out", tmpOutput], (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+    const jpegBuffer = fs.readFileSync(tmpOutput);
+    return { success: true, buffer: Array.from(jpegBuffer) };
+  } catch (error) {
+    return { success: false, message: error.message };
+  } finally {
+    try { fs.unlinkSync(tmpInput); } catch (_) {}
+    try { fs.unlinkSync(tmpOutput); } catch (_) {}
+  }
+});
 
 // ファイル保存のIPCハンドラー
 ipcMain.handle("save-file", async (event, { buffer, fileName }) => {
