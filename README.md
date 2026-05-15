@@ -12,8 +12,8 @@ iPhoneで撮った領収書などの写真を、経費申請に使いやすいJP
 
 | お使いのMac | ダウンロード |
 |---|---|
-| M1 / M2 / M3 (Apple Silicon) | [**KeiHiPon-1.0.0-arm64.dmg** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon-1.0.0-arm64.dmg) |
-| Intel Mac | [**KeiHiPon-1.0.0.dmg** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon-1.0.0.dmg) |
+| M1 / M2 / M3 (Apple Silicon) | [**KeiHiPon-1.0.1-arm64.dmg** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon-1.0.1-arm64.dmg) |
+| Intel Mac | [**KeiHiPon-1.0.1.dmg** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon-1.0.1.dmg) |
 
 **インストール手順（Mac）**
 
@@ -32,8 +32,8 @@ iPhoneで撮った領収書などの写真を、経費申請に使いやすいJP
 
 | 種類 | ダウンロード |
 |---|---|
-| インストーラー（推奨） | [**KeiHiPon Setup 1.0.0.exe** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon%20Setup%201.0.0.exe) |
-| ポータブル版（インストール不要） | [**KeiHiPon 1.0.0.exe** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon%201.0.0.exe) |
+| インストーラー（推奨） | [**KeiHiPon Setup 1.0.1.exe** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon%20Setup%201.0.1.exe) |
+| ポータブル版（インストール不要） | [**KeiHiPon 1.0.1.exe** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon%201.0.1.exe) |
 
 **インストール手順（Windows）**
 
