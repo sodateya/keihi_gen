@@ -19,13 +19,11 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "heic2any": "^0.0.4"
-  },
   "devDependencies": {
     "@electron/fuses": "^2.1.1",
     "electron": "~41.5.0",
-    "electron-builder": "^26.8.1"
+    "electron-builder": "^26.8.1",
+    "heic2any": "^0.0.4"
   },
   "build": {
     "appId": "com.keihigen.app",
