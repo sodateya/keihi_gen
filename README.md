@@ -37,8 +37,8 @@ xattr -dr com.apple.quarantine /Applications/KeiHiPon.app
 
 | 種類 | ダウンロード |
 |---|---|
-| インストーラー（推奨） | [**KeiHiPon Setup 1.0.1.exe** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon%20Setup%201.0.1.exe) |
-| ポータブル版（インストール不要） | [**KeiHiPon 1.0.1.exe** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon%201.0.1.exe) |
+| インストーラー（推奨） | [**KeiHiPon.Setup.1.0.1.exe** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon.Setup.1.0.1.exe) |
+| ポータブル版（インストール不要） | [**KeiHiPon.1.0.1.exe** をダウンロード](https://github.com/sodateya/keihi_gen/releases/download/v1.0.1/KeiHiPon.1.0.1.exe) |
 
 **インストール手順（Windows）**
 
